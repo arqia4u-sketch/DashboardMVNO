@@ -740,6 +740,7 @@ footer{background:var(--footer-bg);border-top:1px solid var(--border);margin-top
         <div><div class="alarme-num" id="alarmeNum">—</div><div style="font-size:9px;color:var(--muted);margin-top:1px;font-weight:500;font-family:'Poppins',sans-serif">protocolos</div></div>
         <div class="alarme-label"><b>#mvno_consulta alarme de rede</b><span>Contabilizado separadamente — monitoramento de rede</span></div>
       </div>
+      <div id="tagExtraBoxes"></div>
     </div>
   </section>
 
@@ -2289,6 +2290,25 @@ function render(){
     }
   });
   document.getElementById('alarmeNum').textContent = fmtN(data.filter(r=>r.temAlarme).length);
+
+  /* ── Cards de volume por tag (demais tags utilizadas, além da tag de alarme) ── */
+  const tagCounts = new Map();
+  data.forEach(r=>{
+    if(!r.tags) return;
+    r.tags.split(',').map(t=>t.trim()).filter(t=>t && t!==TAG_ALARME).forEach(t=>{
+      tagCounts.set(t, (tagCounts.get(t)||0)+1);
+    });
+  });
+  const tagBoxesEl = document.getElementById('tagExtraBoxes');
+  if(tagBoxesEl){
+    tagBoxesEl.innerHTML='';
+    [...tagCounts.entries()].sort((a,b)=>b[1]-a[1]).forEach(([tag,count])=>{
+      const box=document.createElement('div');
+      box.className='alarme-box';
+      box.innerHTML=`<div><div class="alarme-num">${fmtN(count)}</div><div style="font-size:9px;color:var(--muted);margin-top:1px;font-weight:500;font-family:'Poppins',sans-serif">protocolos</div></div><div class="alarme-label"><b>${tag}</b></div>`;
+      tagBoxesEl.appendChild(box);
+    });
+  }
 
   /* ── Ranking aberturas incorretas ── */
   const rankBase = records.filter(r=>{
